@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json.Serialization;
-
+//using Serilog;
 var builder = WebApplication.CreateBuilder(args);
-
+//builder.Logging.AddSerilog();
 // Add services to the container.
 
 builder.Services.AddControllers();

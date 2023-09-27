@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Security.Cryptography;
 
 namespace FullStackAPi.Helper
@@ -22,26 +23,29 @@ namespace FullStackAPi.Helper
             else
             {
                  salt = new byte[SaltSize];
-                RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
-                // Fill the array with a random value.
-                rng.GetBytes(salt);
-              
-                try
+                using (var rng = RandomNumberGenerator.Create())
                 {
-                   
-                    var key = new Rfc2898DeriveBytes(password, salt!, Iterations, HashAlgorithmName.SHA256);
-                    var hash = key.GetBytes(HashSize);
-                    var hashBytes = new byte[SaltSize + HashSize];
-                    Array.Copy(salt!, 0, hashBytes, 0, SaltSize);
-                    Array.Copy(hash, 0, hashBytes, SaltSize, HashSize);
-                    var base64Hash = Convert.ToBase64String(hashBytes);
-                    return base64Hash;
-                }
-                catch (Exception)
-                {
+                    rng.GetBytes(salt);
 
-                    throw;
+                    try
+                    {
+
+                        var key = new Rfc2898DeriveBytes(password, salt!, Iterations, HashAlgorithmName.SHA256);
+                        var hash = key.GetBytes(HashSize);
+                        var hashBytes = new byte[SaltSize + HashSize];
+                        Array.Copy(salt!, 0, hashBytes, 0, SaltSize);
+                        Array.Copy(hash, 0, hashBytes, SaltSize, HashSize);
+                        var base64Hash = Convert.ToBase64String(hashBytes);
+                        return base64Hash;
+                    }
+                    catch (Exception)
+                    {
+
+                        throw;
+                    }
                 }
+                
+             
             }
         }
 

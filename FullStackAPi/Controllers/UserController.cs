@@ -15,13 +15,15 @@ namespace FullStackAPi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class EmployeesController : Controller
+    public class UserController: Controller
     {
         private readonly FullStackDbContext _fullStackDbContext;
-        private readonly string? DateFormat;
-        public EmployeesController(FullStackDbContext fullStackDbContext)
+      
+        private readonly ILogger _logger;
+        public UserController(FullStackDbContext fullStackDbContext, ILoggerFactory loggerFactory)
         {
             _fullStackDbContext = fullStackDbContext;
+            _logger = loggerFactory.CreateLogger("Information");
         }
 
         [HttpPost("Authenticate")]
@@ -39,57 +41,6 @@ namespace FullStackAPi.Controllers
 
        
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllEmployees()
-        {
-            var employess = await _fullStackDbContext.Employees.ToListAsync();
-            return Ok(employess);
-        }
-
-
-        [HttpPost]
-        public async Task<IActionResult> AddEmployee([FromBody] Employee employee)
-        {
-            employee.Id = Guid.NewGuid();
-            var addemployee = await _fullStackDbContext.Employees.AddAsync(employee);
-            await _fullStackDbContext.SaveChangesAsync();
-            return Ok(employee);
-        }
-
-        [HttpGet]
-        [Route("{id:Guid}")]
-        public async Task<IActionResult> GetEmployee([FromRoute] Guid id)
-        {
-            var employee = await _fullStackDbContext.Employees.FirstOrDefaultAsync(x => x.Id == id);
-            if(employee == null) { return NotFound(); }
-            return Ok(employee);
-        }
-
-        //[HttpPut]
-        //[Route("{id:Guid}")]
-        //public async Task<IActionResult> UpdateEmployee([FromRoute] Guid id,Employee updateEmployeeRequested)
-        //{
-        //    var employee = await _fullStackDbContext.Employees.FindAsync(id);
-        //    if (employee == null) { return NotFound(); }
-        //    employee.Name = updateEmployeeRequested.Name;
-        //    employee.Email = updateEmployeeRequested.Email;
-        //    employee.Phone = updateEmployeeRequested.Phone;
-        //    employee.Salary = updateEmployeeRequested.Salary;
-        //    employee.Department = updateEmployeeRequested.Department;
-        //    await _fullStackDbContext.SaveChangesAsync();
-        //    return Ok(employee);
-        //}
-
-        [HttpDelete]
-        [Route("{id:Guid}")]
-        public async Task<IActionResult> DeleteEmployee([FromRoute] Guid id)
-        {
-            var employee = await _fullStackDbContext.Employees.FindAsync(id);
-            if (employee == null) { return NotFound(); }
-            _fullStackDbContext.Employees.Remove(employee);
-            await _fullStackDbContext.SaveChangesAsync();
-            return Ok(employee);
-        }
         [HttpDelete]
         [Route("deleteuser/{id:Guid}")]
         public async Task<IActionResult> DeleteUser([FromRoute] Guid id)
@@ -117,8 +68,8 @@ namespace FullStackAPi.Controllers
                 return BadRequest(new { Message = pass.ToString()}); 
             }
                 
-            user.CreatedAt = DateTime.Now.ToString(DateFormat);
-            user.ModifiedAt = DateTime.Now.ToString(DateFormat);
+            user.CreatedAt = DateTime.Now.ToString();
+            user.ModifiedAt = DateTime.Now.ToString();
             if(user.Password != null)
             {
                 user.Password = PasswordHasher.HashPassword(user.Password);
@@ -207,7 +158,9 @@ namespace FullStackAPi.Controllers
             user.Role = updateuserRequested.Role;
             user.UserName = updateuserRequested.UserName;
             user.Address = updateuserRequested.Address;
+            user.ModifiedAt= DateTime.Now.ToString();
             await _fullStackDbContext.SaveChangesAsync();
+            _logger.LogInformation( "Update User with {id} at:{}", id, user.ModifiedAt);
             return Ok(user);
         }
 
